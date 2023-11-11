@@ -7,6 +7,6 @@ curl -H "X-Plex-Token: *********" -H "Accept: application/json" https://plex.exa
 ```
 Get playlist
 ```
-curl -H "X-Plex-Token: *********" -H "Accept: application/json" https://plex.example.com/playlists/44206//playlists/44206/itemsitems
+curl -H "X-Plex-Token: *********" -H "Accept: application/json" https://plex.example.com/playlists/12345/items
 ```
 Playlist can be updated with PUT.
