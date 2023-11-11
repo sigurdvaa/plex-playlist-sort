@@ -1,7 +1,7 @@
 import json
 import sys
-import urllib.request
 import urllib.parse
+import urllib.request
 from dataclasses import dataclass
 from typing import Optional
 
@@ -9,18 +9,14 @@ from typing import Optional
 @dataclass
 class Config:
     baseurl: str
-    token: str
     name: str
+    headers: dict[str, str]
 
 
 def clear_playlist(config: Config, idx: str) -> dict:
-    headers = {
-        "Accept": "application/json",
-        "X-Plex-Token": config.token,
-    }
     req = urllib.request.Request(
-        config.baseurl + f"/playlists/{idx}/items",
-        headers=headers,
+        f"{config.baseurl}/playlists/{idx}/items",
+        headers=config.headers,
         method="DELETE",
     )
     with urllib.request.urlopen(req) as response:
@@ -28,51 +24,31 @@ def clear_playlist(config: Config, idx: str) -> dict:
 
 
 def get_playlists(config: Config) -> dict:
-    headers = {
-        "Accept": "application/json",
-        "X-Plex-Token": config.token,
-    }
-    req = urllib.request.Request(config.baseurl + "/playlists/all", headers=headers)
+    req = urllib.request.Request(f"{config.baseurl}/playlists/all", headers=config.headers)
     with urllib.request.urlopen(req) as response:
         return json.loads(response.read())
 
 
 def get_playlist(config: Config, idx: str) -> dict:
-    headers = {
-        "Accept": "application/json",
-        "X-Plex-Token": config.token,
-    }
-    req = urllib.request.Request(config.baseurl + f"/playlists/{idx}/items", headers=headers)
+    req = urllib.request.Request(
+        f"{config.baseurl}/playlists/{idx}/items",
+        headers=config.headers,
+    )
     with urllib.request.urlopen(req) as response:
         return json.loads(response.read())
 
 
 def get_server_id(config: Config) -> dict:
-    headers = {
-        "Accept": "application/json",
-        "X-Plex-Token": config.token,
-    }
-    req = urllib.request.Request(config.baseurl + "/identity", headers=headers)
+    req = urllib.request.Request(f"{config.baseurl}/identity", headers=config.headers)
     with urllib.request.urlopen(req) as response:
         return json.loads(response.read())
 
 
-def update_playlist(config: Config, idx: str, server_id: str, playlist: dict):
-    headers = {
-        "Accept": "application/json",
-        "Content-Type": "application/json",
-        "X-Plex-Token": config.token,
-    }
-
-    playqueue_ids = ",".join(
-        [item["ratingKey"] for item in playlist["MediaContainer"]["Metadata"]],
-    )
-    params = {"uri": f"server://{server_id}", "playQueueID": playqueue_ids}
-    query_params = urllib.parse.urlencode(params)
-
+def add_to_playlist(config: Config, idx: str, server_id: str, playqueue_ids: list[int]):
+    query_params = f"uri=server://{server_id}/com.plexapp.plugins.library/library/metadata/{','.join(playqueue_ids)}"
     req = urllib.request.Request(
-        config.baseurl + f"/playlists/{idx}/items?{query_params}",
-        headers=headers,
+        f"{config.baseurl}/playlists/{idx}/items?{query_params}",
+        headers=config.headers,
         method="PUT",
     )
     with urllib.request.urlopen(req) as response:
@@ -93,7 +69,15 @@ def sort_playlist(playlist: dict):
 
 
 def main():
-    config = Config(sys.argv[1], sys.argv[2], sys.argv[3])
+    config = Config(
+        baseurl=sys.argv[1],
+        name=sys.argv[3],
+        headers={
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "X-Plex-Token": sys.argv[2],
+        },
+    )
     server_id = get_server_id(config)
 
     playlist_id = get_playlist_id(config, config.name)
@@ -106,13 +90,15 @@ def main():
         print(f"Can only sort dumb playlist, this one is smart: {config.name}")
         exit(1)
 
-    clear_playlist(config, playlist_id)
     sort_playlist(playlist)
-    result = update_playlist(
+    playqueue_ids = [item["ratingKey"] for item in playlist["MediaContainer"]["Metadata"]]
+
+    clear_playlist(config, playlist_id)
+    result = add_to_playlist(
         config,
         playlist_id,
         server_id["MediaContainer"]["machineIdentifier"],
-        playlist,
+        playqueue_ids,
     )
     print(result)
 
