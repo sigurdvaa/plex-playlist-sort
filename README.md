@@ -1,4 +1,4 @@
-# plex-sort-playlist
+# plex-playlist-sort
 ## Usage
 `Usage: plex-playlist-sort.py <Plex URL> <Access Token> <Playlist Title>`
 
