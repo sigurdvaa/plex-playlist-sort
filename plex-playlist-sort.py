@@ -36,8 +36,9 @@ def get_playlists(config: Config) -> Any:
         return json.loads(response.read())
 
 
-def sort_playlist(playlist: Any) -> None:
+def sorted_playlist_items(playlist: Any) -> list[int]:
     playlist["MediaContainer"]["Metadata"].sort(key=lambda x: x["title"])
+    return [item["playlistItemID"] for item in playlist["MediaContainer"]["Metadata"]]
 
 
 def update_playlist_order(config: Config, idx: str, items: list[int]) -> None:
@@ -81,9 +82,7 @@ def main() -> None:
         print(f"Can't sort smart playlist: '{config.title}'")
         exit(1)
 
-    sort_playlist(playlist)
-    playlist_items = [item["playlistItemID"] for item in playlist["MediaContainer"]["Metadata"]]
-
+    playlist_items = sorted_playlist_items(playlist)
     update_playlist_order(config, playlist_id, playlist_items)
     print("Done")
 
