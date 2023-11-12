@@ -74,7 +74,7 @@ def main() -> None:
     if not playlist_id:
         print(f"Playlist not found: '{config.title}'")
         exit(1)
-    print(f"Found Playlist: '{config.title}'")
+    print(f"Playlist found: '{config.title}'")
 
     playlist = get_playlist(config, playlist_id)
     if playlist["MediaContainer"]["smart"]:
