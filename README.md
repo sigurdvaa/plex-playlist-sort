@@ -1,4 +1,6 @@
 # plex-playlist-sort
+Sorts and updates the playlist in-place.
+
 `Usage: plex-playlist-sort.py <Plex URL> <Access Token> <Playlist Title>`
 
 - Plex URL: URL to the server. Example: `https://plex.example.com`
