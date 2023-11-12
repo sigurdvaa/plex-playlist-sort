@@ -1,24 +1,21 @@
 import json
 import sys
-import urllib.request
 from dataclasses import dataclass
-from typing import Any, Optional
+from http.client import HTTPConnection, HTTPSConnection
+from typing import Any, Optional, Union
 
 
 @dataclass
 class Config:
-    baseurl: str
+    conn: Union[HTTPConnection, HTTPSConnection]
     title: str
     headers: dict[str, str]
 
 
 def get_playlist(config: Config, idx: str) -> Any:
-    req = urllib.request.Request(
-        f"{config.baseurl}/playlists/{idx}/items",
-        headers=config.headers,
-    )
-    with urllib.request.urlopen(req) as response:
-        return json.loads(response.read())
+    config.conn.request("GET", f"/playlists/{idx}/items", headers=config.headers)
+    response = config.conn.getresponse()
+    return json.loads(response.read())
 
 
 def get_playlist_id(config: Config) -> Optional[str]:
@@ -31,13 +28,15 @@ def get_playlist_id(config: Config) -> Optional[str]:
 
 
 def get_playlists(config: Config) -> Any:
-    req = urllib.request.Request(f"{config.baseurl}/playlists/all", headers=config.headers)
-    with urllib.request.urlopen(req) as response:
-        return json.loads(response.read())
+    config.conn.request("GET", "/playlists/all", headers=config.headers)
+    response = config.conn.getresponse()
+    return json.loads(response.read())
 
 
 def sorted_playlist_items(playlist: Any) -> list[int]:
-    playlist["MediaContainer"]["Metadata"].sort(key=lambda x: x["title"])
+    playlist["MediaContainer"]["Metadata"].sort(
+        key=lambda x: x["title"][4:] if x["title"].lower().startswith("the ") else x["title"],
+    )
     return [item["playlistItemID"] for item in playlist["MediaContainer"]["Metadata"]]
 
 
@@ -46,29 +45,40 @@ def update_playlist_order(config: Config, idx: str, items: list[int]) -> None:
     for i, item in enumerate(items):
         if i > 0:
             query = f"?after={items[i - 1]}"
-
-        req = urllib.request.Request(
-            f"{config.baseurl}/playlists/{idx}/items/{item}/move{query}",
+        config.conn.request(
+            "PUT",
+            f"/playlists/{idx}/items/{item}/move{query}",
             headers=config.headers,
-            method="PUT",
         )
-        urllib.request.urlopen(req)
+        response = config.conn.getresponse()
+        response.read()
         print(f"\rSorted {i + 1} of {len(items)} items...", end="")
     print()
 
 
 def main() -> None:
     if len(sys.argv) != 4:
-        print(f"Usage: {sys.argv[0]} <Plex URL> <Access Token> <Playlist Title>")
+        print(f"Usage: {sys.argv[0]} <Plex Hostname> <Access Token> <Playlist Title>")
         exit(1)
 
+    url = sys.argv[1]
+    port = None
+    if ":" in url:
+        port = int(url.split(":")[1])
+    if url.startswith("http://"):
+        conn = HTTPConnection(url[7:], port if port else 80)
+    elif url.startswith("https://"):
+        conn = HTTPSConnection(url[8:], port if port else 443)
+    else:
+        conn = HTTPSConnection(url, port if port else 443)
+
     config = Config(
-        baseurl=sys.argv[1],
         title=sys.argv[3],
         headers={
             "Accept": "application/json",
             "X-Plex-Token": sys.argv[2],
         },
+        conn=conn,
     )
 
     playlist_id = get_playlist_id(config)
