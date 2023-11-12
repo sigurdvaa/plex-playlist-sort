@@ -78,7 +78,7 @@ def main() -> None:
 
     playlist = get_playlist(config, playlist_id)
     if playlist["MediaContainer"]["smart"]:
-        print(f"Can't only sort smart playlist: '{config.title}'")
+        print(f"Can't sort smart playlist: '{config.title}'")
         exit(1)
 
     sort_playlist(playlist)
