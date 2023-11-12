@@ -1,5 +1,5 @@
 # plex-playlist-sort
-Sorts and updates the playlist in-place.
+Sorts and updates a non-smart playlist in-place.
 
 `Usage: plex-playlist-sort.py <Plex URL> <Access Token> <Playlist Title>`
 
