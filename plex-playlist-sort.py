@@ -53,7 +53,7 @@ def update_playlist_order(config: Config, idx: str, items: list[int]) -> None:
             method="PUT",
         )
         urllib.request.urlopen(req)
-        print(f"Sorted {i + 1} of {len(items)} items...", end="\r")
+        print(f"\rSorted {i + 1} of {len(items)} items...", end="")
     print()
 
 
