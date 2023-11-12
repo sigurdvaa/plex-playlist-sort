@@ -1,5 +1,4 @@
 # plex-playlist-sort
-## Usage
 `Usage: plex-playlist-sort.py <Plex URL> <Access Token> <Playlist Title>`
 
 - Plex URL: URL to the server. Example: `https://plex.example.com`
