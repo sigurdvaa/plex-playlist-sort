@@ -62,7 +62,7 @@ def main() -> None:
         exit(1)
 
     url = sys.argv[1]
-    port = None
+    port: Optional[int] = None
     if ":" in url:
         port = int(url.split(":")[1])
     if url.startswith("http://"):
