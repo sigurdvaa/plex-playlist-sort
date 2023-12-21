@@ -58,7 +58,7 @@ def update_playlist_order(config: Config, idx: str, items: list[int]) -> None:
 
 def main() -> None:
     if len(sys.argv) != 4:
-        print(f"Usage: {sys.argv[0]} <Plex Hostname> <Access Token> <Playlist Title>")
+        print(f"Usage: {sys.argv[0]} <Plex Hostname | URL> <Access Token> <Playlist Title>")
         exit(1)
 
     url = sys.argv[1]
@@ -66,11 +66,11 @@ def main() -> None:
     if ":" in url:
         port = int(url.split(":")[1])
     if url.startswith("http://"):
-        conn = HTTPConnection(url[7:], port if port else 80)
+        conn = HTTPConnection(url[7:], port or 80)
     elif url.startswith("https://"):
-        conn = HTTPSConnection(url[8:], port if port else 443)
+        conn = HTTPSConnection(url[8:], port or 443)
     else:
-        conn = HTTPSConnection(url, port if port else 443)
+        conn = HTTPSConnection(url, port or 443)
 
     config = Config(
         title=sys.argv[3],
