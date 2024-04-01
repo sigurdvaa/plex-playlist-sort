@@ -1,5 +1,5 @@
 # plex-playlist-sort
-Alphabetically sorts list items by title, updates the non-smart playlist in-place.
+Sorts list items alphabetically by title, updates the non-smart playlist in-place.
 
 `Usage: plex-playlist-sort.py <Plex Hostname | URL> <Access Token> <Playlist Title>`
 
