@@ -63,8 +63,8 @@ def main() -> None:
 
     url = sys.argv[1]
     port: Optional[int] = None
-    if ":" in url:
-        port = int(url.split(":")[1])
+    if url.count(":") == 2:
+        port = int(url.split(":")[2].split("/")[0])
     elif url.startswith("http://"):
         conn = HTTPConnection(url[7:], port or 80)
     elif url.startswith("https://"):
